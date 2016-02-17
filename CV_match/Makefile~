@@ -1,0 +1,5 @@
+match.out:
+	g++ match.cpp `pkg-config --cflags opencv` `pkg-config --libs opencv`  -I/usr/lib/opencv -o match.out
+
+clean:
+	rm -r match.out
