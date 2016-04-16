@@ -1,5 +1,0 @@
-kadai2.out:calibration.cpp calibration.cpp
-	g++ calibration.cpp calibration.hpp `pkg-config --cflags opencv` `pkg-config --libs opencv` -std=c++11 -o calibration.out
-
-clean:
-	rm -r calibration.out
