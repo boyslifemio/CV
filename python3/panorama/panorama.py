@@ -15,14 +15,11 @@ if __name__=="__main__":
         print("usage: ２枚以上画像のパスを渡してください")
         exit()
 
+    print("--start--")
     images = []
     panorama = []
     for i in image_names[1:]:
         images.append(Image(i))
-
-    #for i in images:
-    #   i.show()
-
 
     panorama.append(WideImage(images[0].image))
 
@@ -34,5 +31,5 @@ if __name__=="__main__":
     #for i in range(0,len(panorama)):
     #   cv2.imshow("result"+str(i),panorama[i].image)
 
-    print("FIN")
+    print("--FIN--")
     cv2.waitKey(0)
