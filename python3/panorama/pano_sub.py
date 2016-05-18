@@ -3,10 +3,10 @@ import cv2, numpy
 class Image:
     def __init__(self,name):
         def make_cambus(img):
-            cambus=numpy.zeros((img.shape[0]*2,img.shape[1]*2,img.shape[2]),numpy.uint8)
+            cambus=numpy.zeros((img.shape[0]*4,img.shape[1]*4,img.shape[2]),numpy.uint8)
             for i in range(img.shape[1]):     
                 for j in range(img.shape[0]):
-                  cambus[j+int(img.shape[0]/2*800/4032),i+int(img.shape[1]/2*600/3024),:] = img[j,i,:]
+                  cambus[j+int(img.shape[0]*4*3/8),i+int(img.shape[1]*4*3/8),:] = img[j,i,:]
             return cambus
 
         def resize_image(name):
@@ -48,36 +48,30 @@ def make_panorama(original1,original2):
     querykeys = []
 
     for i in matches:
-        print(i[0].distance)
+        print(i[0].distance,end='')
         if i[0].distance < 500:
             if i[0].distance/i[1].distance < 0.9:
-                print("good")
+                print('-->good match')
                 goodmatches.append(i[0])
                 querykeys.append((original1.kp[i[0].queryIdx].pt[0],original1.kp[i[0].queryIdx].pt[1]))
                 trainkeys.append((original2.kp[i[0].trainIdx].pt[0],original2.kp[i[0].trainIdx].pt[1]))
-
-    H, status = cv2.findHomography(numpy.array(trainkeys),numpy.array(querykeys),cv2.RANSAC)
-
-    dx=0
-    dy=0
-    count=0
-    for i,v in enumerate(status):
-        if v==1:
-            dx += querykeys[i][0] - trainkeys[i][0]
-            dy += querykeys[i][1] - trainkeys[i][1]
-            count += 1
-
-    height,width = original1.image.shape[:2]
-    dx = abs(int(round(dx/count)))
-    dy = abs(int(round(dy/count)))
+            else:
+                print('-->not good match')
+        else:
+            print('-->not good match')
 
     print("-----Calculating Homography-----")
-    panorama = cv2.warpPerspective(original2.image,H,(int(width+dx),int(height+dy)))
+    H, status = cv2.findHomography(numpy.array(trainkeys),numpy.array(querykeys),cv2.RANSAC)
+    height,width = original1.image.shape[:2]
 
+    panorama = cv2.warpPerspective(original2.image,H,(int(width),int(height)))
     for i in range(int(width/2)):
       for j in range(int(height/2)):
-        if original1.image[j+int(height/4),int(i+width/4)].any():
-          panorama[j+int(height/4),int(i+width/4)] = original1.image[j+int(height/4),int(i+width/4)]
-
+        if original1.image[j+int(height*3/8),int(i+width*3/8)].all():
+          if panorama[j+int(height*3/8),int(i+width*3/8)].all():
+            panorama[j+int(height*3/8),int(i+width*3/8)] = original1.image[j+int(height*3/8),int(i+width*3/8)]/2+panorama[j+int(height*3/8),int(i+width*3/8)]/2
+          else:
+            panorama[j+int(height*3/8),int(i+width*3/8)] = original1.image[j+int(height*3/8),int(i+width*3/8)]
+    print("--next--")
     return panorama
 
