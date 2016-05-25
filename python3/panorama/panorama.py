@@ -19,6 +19,7 @@ if __name__=="__main__":
     images = []
     panorama = []
     for i in image_names[1:]:
+        print(i)
         images.append(Image(i))
 
     panorama.append(WideImage(images[0].image))
