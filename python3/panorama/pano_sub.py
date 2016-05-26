@@ -64,13 +64,13 @@ def make_panorama(original1,original2):
     H, status = cv2.findHomography(numpy.array(trainkeys),numpy.array(querykeys),cv2.RANSAC)
     height,width = original1.image.shape[:2]
 
-    panorama = cv2.warpPerspective(original2.image,H,(int(width),int(height)))
-    for i in range(int(width/2)):
-      for j in range(int(height/2)):
-        if original1.image[j+int(height*3/8),int(i+width*3/8)].all():
-          if panorama[j+int(height*3/8),int(i+width*3/8)].all():
-            panorama[j+int(height*3/8),int(i+width*3/8)] = original1.image[j+int(height*3/8),int(i+width*3/8)]/2+panorama[j+int(height*3/8),int(i+width*3/8)]/2
+    panorama = cv2.warpPerspective(original2.image,H,(width,height))
+    for i in range(width):
+      for j in range(height):
+        if original1.image[j,i].all():
+          if panorama[j,i].all():
+            panorama[j,i] = original1.image[j,i]/2+panorama[j,i]/2
           else:
-            panorama[j+int(height*3/8),int(i+width*3/8)] = original1.image[j+int(height*3/8),int(i+width*3/8)]
+            panorama[j,i] = original1.image[j,i]
     print("--next--")
     return panorama
