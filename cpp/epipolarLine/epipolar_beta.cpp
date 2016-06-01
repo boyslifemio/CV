@@ -3,9 +3,9 @@
 int main(){
 	vector<Image> images;
 	string path;
-  cout << "start" << endl;
+  cout << "---start---" << endl;
 	Ptr<AKAZE> akaze = AKAZE::create();
-  cout << "generate akaze" << endl;
+  cout << "---generated akaze detector---" << endl;
 
 	for(int i = 0; i < 2; i++){
 	  path = "./img/" + to_string(i) + ".JPG";
@@ -38,7 +38,7 @@ int main(){
         if(matchesBetween0andOthers[i][j][0].distance / matchesBetween0andOthers[i][j][1].distance < 0.8){
           tmp_match.push_back(matchesBetween0andOthers[i][j][0]);
           tmp_queryKps.push_back(images[0].kps[matchesBetween0andOthers[i][j][0].queryIdx]);
-          tmp_trainKps.push_back(images[0].kps[matchesBetween0andOthers[i][j][0].trainIdx]);   
+          tmp_trainKps.push_back(images[i+1].kps[matchesBetween0andOthers[i][j][0].trainIdx]);   
         }
       }
     }

@@ -3,10 +3,6 @@
 #include <opencv2/stitching.hpp>
 #include <vector>
 #include <string>
-#include <unistd.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/time.h>
 
 using namespace cv;
 using namespace std;
