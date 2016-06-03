@@ -48,16 +48,7 @@ void Image::writeLine(vector<Vec3f>& epipolarLine){
     line(image, Point(0,-c/b),Point(image.cols-1, -(a/b*image.cols+c/b)),Scalar::all(255));
   }
 }
-/*
-void Image::on_mouse(int event, int x, int y, int flags, void* param){
-  MouseInfo *mInfo = (MouseInfo*)param;
-  if (event == 1){
-    (*mInfo).x = x;
-    (*mInfo).y = y;
-  }
-  cout << event << endl;
-}
-*/
+
 void Image::showImage(){
   imshow(name,image);
 }
@@ -71,17 +62,18 @@ void calcLine(MouseInfo* info,vector<Vec3f>& epipolarLine){
 
 void writeLine(MouseInfo* info, vector<Vec3f>& epipolarLine){
   float a, b, c;
+  Mat output = (info -> center).clone();
   for(auto v = epipolarLine.begin(); v != epipolarLine.end(); ++v){
     a = (*v)[0];
     b = (*v)[1];
     c = (*v)[2];
-    line(info->center, Point(0,-c/b),Point((info->center).cols-1, -(a/b*(info->center).cols+c/b)),Scalar::all(255));
-    imshow(info->title,info->center);
+    line(output, Point(0,-c/b),Point(output.cols-1, -(a/b*output.cols+c/b)),Scalar::all(255),CV_AA);
+    imshow(info->title,output);
   }
 }
 
 void on_mouse(int event, int x, int y, int flags, void* param){
-  if (event == 1){
+  if (event == 0){
     vector<Vec3f> epipolarLine;
     MouseInfo *mInfo = (MouseInfo*)param;
     (*mInfo).x = x;
@@ -90,6 +82,5 @@ void on_mouse(int event, int x, int y, int flags, void* param){
     calcLine(mInfo, epipolarLine);
     writeLine(mInfo, epipolarLine);
   }
-  cout << event << endl;
 }
 
