@@ -7,7 +7,7 @@ int main(){
 	Ptr<AKAZE> akaze = AKAZE::create();
   cout << "---generated akaze detector---" << endl;
 
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 3; i++){
 	  path = "./img/" + to_string(i) + ".JPG";
 	  images.push_back(Image(path,akaze));
 	}

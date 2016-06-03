@@ -66,7 +66,7 @@ void calcLine(MouseInfo* info,vector<Vec3f>& epipolarLine){
   vector<Point2f> pt(1);
   pt[0].x = info->x;
   pt[0].y = info->y;
-  computeCorrespondEpilines(pt, 1, info->F, epipolarLine);
+  computeCorrespondEpilines(pt, 2, info->F, epipolarLine);
 }
 
 void writeLine(MouseInfo* info, vector<Vec3f>& epipolarLine){
