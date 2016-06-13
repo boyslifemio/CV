@@ -41,17 +41,17 @@ def resize_image(img):
     img = cv2.resize(img,(int(img.shape[1]*600/3024),int(img.shape[0]*800/4032)))
     return img
 
-def calcDst4(H, size, targetSize):
+def calcDst4(H, size):
     x = []
     y = []
     x.append(((H[0][0]*0 + H[0][1]*0 + H[0][2])/(H[2][0]*0 + H[2][1]*0 + H[2][2])))
     y.append(((H[1][0]*0 + H[1][1]*0 + H[1][2])/(H[2][0]*0 + H[2][1]*0 + H[2][2])))
-    x.append(((H[0][0]*0 + H[0][1]*size[1] + H[0][2])/(H[2][0]*0 + H[2][1]*size[1] + H[2][2])))
-    y.append(((H[1][0]*0 + H[1][1]*size[1] + H[1][2])/(H[2][0]*0 + H[2][1]*size[1] + H[2][2])))
-    x.append(((H[0][0]*size[0] + H[0][1]*0 + H[0][2])/(H[2][0]*size[0] + H[2][1]*0 + H[2][2])))
-    y.append(((H[1][0]*size[0] + H[1][1]*0 + H[1][2])/(H[2][0]*size[0] + H[2][1]*0 + H[2][2])))
-    x.append(((H[0][0]*size[0] + H[0][1]*size[1] + H[0][2])/(H[2][0]*size[0] + H[2][1]*size[1] + H[2][2])))
-    y.append(((H[1][0]*size[0] + H[1][1]*size[1] + H[1][2])/(H[2][0]*size[0] + H[2][1]*size[1] + H[2][2])))
+    x.append(((H[0][0]*0 + H[0][1]*size[0] + H[0][2])/(H[2][0]*0 + H[2][1]*size[0] + H[2][2])))
+    y.append(((H[1][0]*0 + H[1][1]*size[0] + H[1][2])/(H[2][0]*0 + H[2][1]*size[0] + H[2][2])))
+    x.append(((H[0][0]*size[1] + H[0][1]*0 + H[0][2])/(H[2][0]*size[1] + H[2][1]*0 + H[2][2])))
+    y.append(((H[1][0]*size[1] + H[1][1]*0 + H[1][2])/(H[2][0]*size[1] + H[2][1]*0 + H[2][2])))
+    x.append(((H[0][0]*size[1] + H[0][1]*size[0] + H[0][2])/(H[2][0]*size[1] + H[2][1]*size[0] + H[2][2])))
+    y.append(((H[1][0]*size[1] + H[1][1]*size[0] + H[1][2])/(H[2][0]*size[1] + H[2][1]*size[0] + H[2][2])))
 
     min_x = min(x)
     min_y = min(y)
@@ -85,7 +85,7 @@ def make_panorama(original1,original2):
     print("-----Calculating Homography-----")
     H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC)
     print('-----finished to calculate-----')
-    div = calcDst4(H,original2.image.shape,original1.image.shape)
+    div = calcDst4(H, original1.image.shape)
     d = original1.resizeMat(div)
     print(original1.image.shape)
     T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
