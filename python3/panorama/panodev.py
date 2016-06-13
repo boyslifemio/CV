@@ -25,6 +25,7 @@ if __name__=="__main__":
     panorama.append(Image(images[0].name, images[0].image))
 
     for i in range(0,len(images)-1):
+        print(i)
         panorama.append(Image(str(i+1),make_panorama(panorama[i],images[i+1])))
 
     cv2.imwrite("panorama.png",panorama[-1].image)
