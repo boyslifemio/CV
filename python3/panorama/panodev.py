@@ -1,9 +1,8 @@
 import cv2
-import numpy
+import numpy as np
 import sys
 
-from pano_sub import Image,WideImage
-from pano_sub import make_panorama
+from sub_dev import *
 
 if __name__=="__main__":
     image_names = sys.argv
@@ -18,16 +17,18 @@ if __name__=="__main__":
     print("--start--")
     images = []
     panorama = []
-    for i in image_names[1:]:
-        print(i)
-        images.append(Image(i))
+    for i in range(1,len(image_names)):
+        print(image_names[i])
+        img = resize_image(cv2.imread(image_names[i],cv2.IMREAD_COLOR))
+        images.append(Image(str(i), img))
 
-    panorama.append(WideImage(images[0].image))
+    panorama.append(Image(images[0].name, images[0].image))
 
     for i in range(0,len(images)-1):
-      panorama.append(WideImage(make_panorama(panorama[i],images[i+1])))
+        panorama.append(Image(str(i+1),make_panorama(panorama[i],images[i+1])))
 
     cv2.imwrite("panorama.png",panorama[-1].image)
+    cv2.imshow("panorama.png",panorama[-1].image)
 
     #for i in range(0,len(panorama)):
     #   cv2.imshow("result"+str(i),panorama[i].image)
