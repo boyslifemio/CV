@@ -49,13 +49,17 @@ class Image:
         if div[1][1] > height:
             d[3] = div[1][1]
         T = np.array([[1, 0, -d[0]], [0, 1, -d[1]], [0, 0, 1]])
-        self.image = cv2.warpPerspective(self.image, T, (int(-d[0] + d[2]), int(-d[1] + d[3])))
         print(d)
+        self.image = cv2.warpPerspective(self.image, T, (int(-d[0] + d[2]), int(-d[1] + d[3])))
         return d
 
 
 def resize_image(img):
     img = cv2.resize(img,(int(img.shape[1]*600/3024),int(img.shape[0]*800/4032)))
+    for i in img:
+        for j in i:
+            if not j.all():
+                j[0] += 1
     return img
 
 def calcDst4(H, size):
@@ -81,7 +85,7 @@ def calcDst4(H, size):
 def SquareCheck(Mat, i, j):
     flag = 0
     for col in range(-2,3):
-        if Mat[i+col,j-2].all() and Mat[i+col,j-1].all() and Mat[i+col,j].all() and Mat[i+col,j+1].all() and Mat[i+col,j+2].all():
+        if Mat[i+col,j-2].any() and Mat[i+col,j-1].any() and Mat[i+col,j].any() and Mat[i+col,j+1].any() and Mat[i+col,j+2].any():
             flag+=1
     if flag == 5:
         return True
@@ -90,22 +94,25 @@ def SquareCheck(Mat, i, j):
 
 def Write(target, src):
     print('-----------Writing------------')
+    mask = np.ndarray((target.shape[0], target.shape[1]), dtype=np.uint8)
     for i in range(src.image.shape[0]):
         for j in range(src.image.shape[1]):
             if i < 3 or i > src.image.shape[0]-3 or j < 3 or j > src.image.shape[1]-3:
                 if src.image[i,j].all():
                     if target[i,j].all():
                         target[i,j] = src.image[i,j]/2+target[i,j]/2
+                        mask[i,j] = 255
                     else:
                         target[i,j] = src.image[i,j]
             else:
                 if SquareCheck(src.image, i, j):
                     if SquareCheck(target, i, j):
                         target[i,j] = src.image[i,j]/2+target[i,j]/2
+                        mask[i,j] = 255
                     else:
                         target[i,j] = src.image[i,j]
     print('-----------Wrote------------')
-    return target
+    return target, mask
 
 
 def temp():
@@ -128,7 +135,7 @@ def make_panorama(original1,original2):
 
     for i in matches:
         print(i[0].distance,end='')
-        if i[0].distance < 600:
+        if i[0].distance < 500:
             if i[0].distance/i[1].distance < 0.8:
                 print("----------------->\U0001F37A")
                 goodmatches.append(i[0])
@@ -143,12 +150,13 @@ def make_panorama(original1,original2):
     H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC)
     print('-----finished to calculate-----')
     div = calcDst4(H, original2.image.shape)
-    d = original1.resizeMat2(div)
+    d = original1.resizeMat(div)
     print(original1.image.shape)
     T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
     panorama = cv2.warpPerspective(original2.image,np.dot(T_xy,H),(original1.image.shape[1],original1.image.shape[0]))
 
-    panorama = Write(panorama,original1)
-
+    panorama, mask = Write(panorama,original1)
+    cv2.imshow('mask',mask)
+    cv2.waitKey(0)
     print("--next--")
     return panorama
