@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import unicodedata
+import copy
 
 class Image:
     def __init__(self,name,img):
@@ -134,29 +135,32 @@ def make_panorama(original1,original2):
     maskArray = []
 
     for i in matches:
-        print(i[0].distance,end='')
         if i[0].distance < 500:
             if i[0].distance/i[1].distance < 0.8:
-                print("----------------->\U0001F37A")
+                print("\U0001F37A", end=' ')
                 goodmatches.append(i[0])
                 querykeys.append((original1.kp[i[0].queryIdx].pt[0],original1.kp[i[0].queryIdx].pt[1]))
                 trainkeys.append((original2.kp[i[0].trainIdx].pt[0],original2.kp[i[0].trainIdx].pt[1]))
             else:
-                print("----------------->\U0001F4A9")
+                pass
+                #print("----------------->\U0001F4A9")
         else:
-            print("----------------->\U0001F4A9")
+            pass
+            #print("----------------->\U0001F4A9")
 
     print("-----Calculating Homography-----")
-    H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC)
+    H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC, 5.0)
     print('-----finished to calculate-----')
     div = calcDst4(H, original2.image.shape)
-    d = original1.resizeMat2(div)
+    d = original1.resizeMat(div)
     print(original1.image.shape)
     T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
     panorama = cv2.warpPerspective(original2.image,np.dot(T_xy,H),(original1.image.shape[1],original1.image.shape[0]))
-
+    temp = copy.deepcopy(panorama)
     panorama, mask = Write(panorama,original1)
+    output = cv2.seamlessClone(original1.image, temp, mask, (int(temp.shape[1]/2),int(temp.shape[0]/2)), cv2.NORMAL_CLONE)
     cv2.imshow('panorama',panorama)
+    cv2.imshow('output',output)
     cv2.imshow('mask',mask)
     cv2.waitKey(0)
     print("--next--")
