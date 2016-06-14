@@ -150,7 +150,7 @@ def make_panorama(original1,original2):
     H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC)
     print('-----finished to calculate-----')
     div = calcDst4(H, original2.image.shape)
-    d = original1.resizeMat(div)
+    d = original1.resizeMat2(div)
     print(original1.image.shape)
     T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
     panorama = cv2.warpPerspective(original2.image,np.dot(T_xy,H),(original1.image.shape[1],original1.image.shape[0]))
