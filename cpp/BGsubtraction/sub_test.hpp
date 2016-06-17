@@ -6,15 +6,18 @@
 #include <iomanip>
 #include <cstdlib>
 
+#define CAMERA_NUMBER 12
+
 using namespace std;
 using namespace cv;
 
 class Mask{
   public:
-    vector<vector<unsigned int>> flagArray;
     Mask(int height, int width);
     void finalizeMask(int threshold, int camera);
+    void plusflags(Mat& tempMask);
   private:
+    vector<vector<unsigned int>> flagArray;
     void giveMask(Mat& finalizedMask,vector<vector<unsigned int>> flagArray, int threshold);
     Mat finalizedMask;
 };
@@ -24,6 +27,14 @@ Mask::Mask(int height, int width){
   finalizedMask = Mat::zeros(height, width, CV_8U);
 }
 
+void Mask::plusflags(Mat& tempMask){
+  for(int i=0;i<tempMask.rows;i++){
+    for(int j=0;j<tempMask.cols;j++){
+      if(tempMask.at<unsigned char>(i,j)==0)
+        flagArray[i][j]+=1;
+    }
+  }
+}
 void Mask::giveMask(Mat& finalizedMask,vector<vector<unsigned int>> flagArray,int threshold){
   finalizedMask = Mat::zeros(flagArray.size(), flagArray[0].size(), CV_8U);
   for(int i=0;i<finalizedMask.rows;i++){
@@ -59,12 +70,17 @@ int mode(){
   else return 0;
 }
 
-void getImage(int camera, int count, Mat& frame){
-  ostringstream scount,scamera;
-  scount << setfill('0') << setw(4) << count;  
-  scamera << setfill('0') << setw(2) << camera;  
- //cout << "/home/geome-r/data/Drone_remap/chiba/" + scount.str() + "-" + scamera.str() + ".png" << endl;
-  frame = imread("/home/geome-r/data/Drone_remap/remap1/" + scount.str() + "-" + scamera.str() + ".png",1);
+void getImage(char* data_place[], int count, Mat& hconcat_frame){
+  Mat input;
+  vector<Mat> src_images;
+  for(int camera = 0; camera < 12; camera++){
+    ostringstream scount,scamera;
+    scamera << setfill('0') << setw(2) << camera;  
+    scount << setfill('0') << setw(4) << count;  
+    input = imread(string(data_place[1]) + "/"  + scount.str() + "-" + scamera.str() + ".png", 1);
+    src_images.push_back(input);
+  }
+  hconcat(src_images, src_images.size(), hconcat_frame);
 }
 
 void calcBackground(Ptr<BackgroundSubtractor>& MOG2model,Mat& frame, Mat& output, Mat& tempMask, int mode){
