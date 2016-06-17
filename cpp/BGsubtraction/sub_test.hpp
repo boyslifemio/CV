@@ -16,30 +16,37 @@ class Mask{
     Mask(int height, int width);
     void finalizeMask(int threshold, int camera);
     void plusflags(Mat& tempMask);
+    Mat return_flagArray();
+    int height,width;
+    //vector<vector<unsigned int>> flagArray;
   private:
-    vector<vector<unsigned int>> flagArray;
-    void giveMask(Mat& finalizedMask,vector<vector<unsigned int>> flagArray, int threshold);
-    Mat finalizedMask;
+    void giveMask(Mat& finalizedMask,Mat& flagArray, int threshold);
+    Mat finalizedMask, flagArray;
 };
 
-Mask::Mask(int height, int width){
-  flagArray.resize(height,vector<unsigned int>(width, 0)); 
+Mask::Mask(int input_height, int input_width){
+  height = input_height;
+  width = input_width;
+  flagArray = Mat::zeros(height, width, CV_8U);
   finalizedMask = Mat::zeros(height, width, CV_8U);
 }
 
+Mat Mask::return_flagArray() {return flagArray;}
+
 void Mask::plusflags(Mat& tempMask){
-  for(int i=0;i<tempMask.rows;i++){
-    for(int j=0;j<tempMask.cols;j++){
-      if(tempMask.at<unsigned char>(i,j)==0)
-        flagArray[i][j]+=1;
+  for(int i=0; i<tempMask.rows; i++){
+    for(int j=0; j<tempMask.cols; j++){
+      if(tempMask.at<unsigned char>(i,j) == 0)
+        flagArray.at<unsigned char>(i,j) += 1;  
+        //flagArray[i][j] += 1;
     }
   }
 }
-void Mask::giveMask(Mat& finalizedMask,vector<vector<unsigned int>> flagArray,int threshold){
-  finalizedMask = Mat::zeros(flagArray.size(), flagArray[0].size(), CV_8U);
+void Mask::giveMask(Mat& finalizedMask,Mat& flagArray,int threshold){
+  finalizedMask = Mat::zeros(flagArray.rows, flagArray.cols, CV_8U);
   for(int i=0;i<finalizedMask.rows;i++){
     for(int j=0;j<finalizedMask.cols;j++){
-      if(flagArray[i][j]<threshold){
+      if(flagArray.at<unsigned char>(i,j) <= threshold){
         finalizedMask.at<unsigned char>(i,j) = 255;  
       }
     }
@@ -83,10 +90,10 @@ void getImage(char* data_place[], int count, Mat& hconcat_frame){
   hconcat(src_images, src_images.size(), hconcat_frame);
 }
 
-void calcBackground(Ptr<BackgroundSubtractor>& MOG2model,Mat& frame, Mat& output, Mat& tempMask, int mode){
+void calcBackground(Ptr<BackgroundSubtractor>& MOG2model,Mat& frame, Mat& output, Mat& tempMask){
   MOG2model->apply(frame, tempMask);
   bitwise_and(frame, frame, output, tempMask);
-	if(mode==1){
+	if(false){
     imshow("output", output);
     imshow("tempmask", tempMask);
   }
@@ -108,4 +115,27 @@ void finalOperate(Mask& maskInfo,int camera){
   maskInfo.finalizeMask(threshold, camera);
 }
 
+void split_hconcat_mask(Mask source, vector<Mask>& output){
+  for(int i=0;i<CAMERA_NUMBER;i++){
+    Mat temp_FlagArray(source.return_flagArray(), Rect(0, (source.height/12)*i, source.width, source.height / 12));
+  }
+}
 
+void MakeMask(char* params[], vector<Mat>& MaskArray){ 
+  int count = 0, end = 0;
+  Mat hconcat_frame;
+  cout << "input end-frame index -> ";
+  cin >> end;
+  Ptr<BackgroundSubtractor> MOG2model=createBackgroundSubtractorMOG2();
+  getImage(params, count, hconcat_frame); //各フレームで12カメラの画像を縦方向につなげた画像
+  Mask hconcat_mask(hconcat_frame.rows, hconcat_frame.cols);
+  while(count < end){
+    Mat output, tempMask;
+    calcBackground(MOG2model, hconcat_frame, output, tempMask);
+    hconcat_mask.plusflags(tempMask);
+    getImage(params, count, hconcat_frame); //各フレームで12カメラの画像を縦方向につなげた画像
+    count++;
+  }
+  vector<Mask> each_camera_mask;
+  split_hconcat_mask(hconcat_mask, each_camera_mask);
+}
