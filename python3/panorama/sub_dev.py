@@ -59,7 +59,7 @@ def resize_image(img):
     img = cv2.resize(img,(int(img.shape[1]*600/3024),int(img.shape[0]*800/4032)))
     for i in img:
         for j in i:
-            if not j.all():
+            if not j.any():
                 j[0] += 1
     return img
 
@@ -115,16 +115,20 @@ def Write(target, src):
     print('-----------Wrote------------')
     return target, mask
 
+def Write2(target, source, SrcMask):
+    mask = cv2.cvtColor(SrcMask,cv2.COLOR_GRAY2RGB)
+    target[(mask != [0,0,0])] = source[(mask != [0,0,0])]
+    return target
 
-def temp():
-    for i in range(original1.image.shape[1]):
-        for j in range(original1.image.shape[0]):
-            if original1.image[j,i].all():
-                if panorama[j,i].all():
-                    panorama[j,i] = original1.image[j,i]/2+panorama[j,i]/2
-            else:
-                panorama[j,i] = original1.image[j,i]
 
+def MakeMask(target, src):
+    CommonMaskRGB = np.zeros((target.shape[0], target.shape[1], target.shape[2]), dtype=np.uint8)
+    SrcMaskRGB = np.zeros((target.shape[0], target.shape[1], target.shape[2]), dtype=np.uint8)
+    CommonMaskRGB[(target!=[0,0,0]) * (src!=[0,0,0])] = 255
+    SrcMaskRGB[(src!=[0,0,0]) * (CommonMaskRGB==[0,0,0])] = 255
+    CommonMask = cv2.cvtColor(CommonMaskRGB,cv2.COLOR_RGB2GRAY)
+    SrcMask = cv2.cvtColor(SrcMaskRGB,cv2.COLOR_RGB2GRAY)
+    return CommonMask, SrcMask
 
 def make_panorama(original1,original2):
     matcher = cv2.BFMatcher(cv2.NORM_L2,False)
@@ -152,16 +156,17 @@ def make_panorama(original1,original2):
     H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC, 5.0)
     print('-----finished to calculate-----')
     div = calcDst4(H, original2.image.shape)
-    d = original1.resizeMat(div)
+    d = original1.resizeMat2(div)
     print(original1.image.shape)
     T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
     panorama = cv2.warpPerspective(original2.image,np.dot(T_xy,H),(original1.image.shape[1],original1.image.shape[0]))
-    temp = copy.deepcopy(panorama)
-    panorama, mask = Write(panorama,original1)
-    output = cv2.seamlessClone(original1.image, temp, mask, (int(temp.shape[1]/2),int(temp.shape[0]/2)), cv2.NORMAL_CLONE)
-    cv2.imshow('panorama',panorama)
-    cv2.imshow('output',output)
-    cv2.imshow('mask',mask)
-    cv2.waitKey(0)
+    #panorama, mask = Write(panorama,original1)
+    CommonMask, SrcMask= MakeMask(panorama, original1.image)
+    label = cv2.connectedComponentsWithStats(CommonMask)
+    center = np.delete(label[3], 0, 0)
+    print(center[0])
+    blending = cv2.seamlessClone(original1.image, panorama, CommonMask, (int(center[0][0]),int(center[0][1])), cv2.NORMAL_CLONE)
+    blending = Write2(blending, original1.image, SrcMask)
+    cv2.imshow('blend',blending)
     print("--next--")
-    return panorama
+    return blending
