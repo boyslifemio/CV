@@ -128,6 +128,10 @@ def MakeMask(target, src):
     SrcMaskRGB[(src!=[0,0,0]) * (CommonMaskRGB==[0,0,0])] = 255
     CommonMask = cv2.cvtColor(CommonMaskRGB,cv2.COLOR_RGB2GRAY)
     SrcMask = cv2.cvtColor(SrcMaskRGB,cv2.COLOR_RGB2GRAY)
+    CommonMask = cv2.erode(CommonMask,np.ones((5,5),np.uint8),iterations = 1)
+    SrcMask = cv2.dilate(SrcMask,np.ones((5,5),np.uint8),iterations = 1)
+    cv2.imshow('common',CommonMask)
+    cv2.imshow('src',SrcMask)
     return CommonMask, SrcMask
 
 def make_panorama(original1,original2):
