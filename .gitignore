@@ -9,5 +9,6 @@
 *.MOV
 memo
 *~
+*.swp
 .DS*
 __pycache__
