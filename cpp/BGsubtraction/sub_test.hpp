@@ -62,7 +62,6 @@ void Mask::finalizeMask(int threshold, int camera){
   int k = 0;
   cout << "increase threshold -> i" << endl << "decrease threshold -> d" << endl << "finalize a mask -> f" << endl; 
   while(1){
-    //cout << threshold << endl;
     drawMask(threshold);
     imshow("finalized-mask",finalizedMask);
     k = waitKey(20);
@@ -126,7 +125,7 @@ void plusflags(vector<vector<unsigned int>>& flagArray, Mat& tempMask){
 void finalOperate(Mask& mask,int camera){
   unsigned int threshold = 1000;
   cout << "input threshold(defalut:1000, Max:3300) >>";
-  cin >> threshold;
+  //cin >> threshold;
   mask.finalizeMask(threshold, camera);
 }
 
