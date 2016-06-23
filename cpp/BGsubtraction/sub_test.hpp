@@ -98,7 +98,7 @@ void getImage(char* data_place[], int count, Mat& hconcat_frame){
   }
   cout << "loaded" << endl;
   hconcat(src_images, src_images.size(), hconcat_frame);
-  cout << "hconcat" << endl;
+  cout << "hconcat_end" << endl;
 }
 
 void calcBackground(Ptr<BackgroundSubtractor>& MOG2model,Mat& frame, Mat& output, Mat& tempMask){
