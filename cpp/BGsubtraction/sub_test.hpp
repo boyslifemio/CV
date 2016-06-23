@@ -159,6 +159,7 @@ void MakeMask(char* place[], vector<Mat>& MaskArray){
   count = 0;
   for (Mask m : each_camera_mask){
     finalOperate(m, count);
+    count++;
   }
   destroyAllWindows();
 }
