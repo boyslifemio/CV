@@ -11,4 +11,5 @@
 memo
 *~
 .DS_Store
+*.swo
 __pycache__

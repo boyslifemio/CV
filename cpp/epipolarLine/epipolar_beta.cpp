@@ -90,19 +90,5 @@ int main(){
       cvSetMouseCallback((images[i].name).c_str(), on_mouse,(MouseInfo*) &Information[i]);
     }
   }
-  /*
-  while(1){
-    for(int i = 0;i < images.size() - 1; i++){
-      if(Information[i+1].event == 1) {
-        calcLine((MouseInfo*) &Information[i+1], lines[i+1], fundamental[i]);
-        cout << Information[i+1].event << endl;
-        images[0].writeLine(lines[i+1]);
-        images[0].showImage();
-        cout << Information[i+1].x << endl;
-        //Information[i+1].flags = 0;
-      }
-    }
-  }
-  */
   waitKey(0);
 }
