@@ -7,8 +7,9 @@
 *.mp4
 *.mov
 *.MOV
+*.swp
 memo
 *~
-*.swp
-.DS*
+*.swo
+.DS_Store
 __pycache__
