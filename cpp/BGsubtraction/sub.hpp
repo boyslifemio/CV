@@ -29,7 +29,6 @@ void Mask::giveMask(Mat& finalizedMask,vector<vector<unsigned int>> flagArray,in
   for(int i=0;i<finalizedMask.rows;i++){
     for(int j=0;j<finalizedMask.cols;j++){
       if(flagArray[i][j]<threshold){
-        //cout << threshold << endl;
         finalizedMask.at<unsigned char>(i,j) = 255;  
       }
     }
