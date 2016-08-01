@@ -49,20 +49,18 @@ class Image:
             d[1] = div[1][0]
         if div[1][1] > height:
             d[3] = div[1][1]
-        T = np.array([[1.0, 0.0, -d[0]], [0.0, 1.0, -d[1]], [0.0, 0.0, 1]])
-        print(d)
+        T = np.array([[1.0, 0.0, -d[0]], [0.0, 1.0, -d[1]], [0.0, 0.0, 1.0]])
         self.image = cv2.warpPerspective(self.image, T, (int(-d[0] + d[2]), int(-d[1] + d[3])))
         return d
 
-
 def resize_image(img):
-    img = cv2.resize(img,(int(img.shape[1]*600/3024),int(img.shape[0]*800/4032)))
+    img = cv2.resize(img,(int(600),int(800)))
     for i in img:
         for j in i:
-            if not j.any():
-                j[0] = 1
-                j[1] = 1
-                j[2] = 1
+            if not j.all():
+                j[0] += 1
+                j[1] += 1
+                j[2] += 1
     return img
 
 def calcDst4(H, size):
@@ -82,7 +80,6 @@ def calcDst4(H, size):
     max_x = max(x)
     max_y = max(y)
     div = ((min_x, max_x),(min_y, max_y))
-    print(div)
     return div
 
 def SquareCheck(Mat, i, j):
@@ -94,6 +91,15 @@ def SquareCheck(Mat, i, j):
         return True
     else:
         return False
+
+def MakeCheckMat(blending):
+    check = np.zeros((blending.shape[0], blending.shape[1]), dtype=np.uint8)
+    for i in range(blending.shape[0]):
+        for j in range(blending.shape[1]):
+            if(blending[i][j][0]!=0 or blending[i][j][1]!=0 or blending[i][j][2]!=0):
+                check[i][j] = 255
+    cv2.imshow('check',check)
+
 
 def Write(target, src):
     print('-----------Writing------------')
@@ -124,25 +130,61 @@ def Write2(target, source, SrcMask):
 
 
 def MakeMask(target, src):
-    CommonMaskRGB = np.zeros((target.shape[0], target.shape[1], target.shape[2]), dtype=np.uint8)
-    SrcMaskRGB = np.zeros((target.shape[0], target.shape[1], target.shape[2]), dtype=np.uint8)
-    CommonMaskRGB[(target!=0) * (src!=0)] = 255
-    SrcMaskRGB[(src!=[0,0,0]) * (CommonMaskRGB==[0,0,0])] = 255
-    CommonMask = cv2.cvtColor(CommonMaskRGB,cv2.COLOR_RGB2GRAY)
-    SrcMask = cv2.cvtColor(SrcMaskRGB,cv2.COLOR_RGB2GRAY)
-    #CommonMask = cv2.morphologyEx(CommonMask, cv2.MORPH_CLOSE, np.ones((5,5),np.uint8))
-    #SrcMask = cv2.morphologyEx(SrcMask, cv2.MORPH_CLOSE, np.ones((5,5),np.uint8))
-    CommonMask = cv2.dilate(CommonMask,np.ones((5,5),np.uint8),iterations = 1)
-    CommonMask = cv2.erode(CommonMask,np.ones((5,5),np.uint8),iterations = 1)
-    SrcMask = cv2.dilate(SrcMask,np.ones((5,5),np.uint8),iterations = 1)
-    SrcMask = cv2.erode(SrcMask,np.ones((5,5),np.uint8),iterations = 2)
-    SrcMask = cv2.dilate(SrcMask,np.ones((5,5),np.uint8),iterations = 2)
-    cv2.imshow('common',CommonMask)
-    cv2.imshow('src',SrcMask)
-    cv2.imwrite('common.png',CommonMask)
-    cv2.imwrite('src.png',SrcMask)
-    cv2.waitKey(0)
-    return CommonMask, SrcMask
+    CommonMaskRGB = np.zeros((target.shape[0], target.shape[1]), dtype=np.uint8)
+    SrcMaskRGB = np.zeros((target.shape[0], target.shape[1]), dtype=np.uint8)
+    TargetMaskRGB = np.zeros((target.shape[0], target.shape[1]), dtype=np.uint8)
+    CommonMaskRGB[(cv2.cvtColor(target,cv2.COLOR_RGB2GRAY) != 0) * (cv2.cvtColor(src,cv2.COLOR_RGB2GRAY) != 0)] = 255
+    SrcMaskRGB[(cv2.cvtColor(src,cv2.COLOR_RGB2GRAY) != 0) * (CommonMaskRGB == 0)] = 255
+    TargetMaskRGB[(cv2.cvtColor(target,cv2.COLOR_RGB2GRAY) != 0)] = 255
+    cv2.imshow('common',CommonMaskRGB)
+    cv2.imshow('src',SrcMaskRGB)
+    #CommonMask = cv2.cvtColor(CommonMaskRGB,cv2.COLOR_RGB2GRAY)
+    #SrcMask = cv2.cvtColor(SrcMaskRGB,cv2.COLOR_RGB2GRAY)
+    CommonMask = cv2.erode(CommonMaskRGB,np.ones((5,5),np.uint8),iterations = 3)
+    #CommonMask = cv2.erode(CommonMask,np.ones((50,50),np.uint8),iterations = 1)
+    SrcMask = cv2.dilate(SrcMaskRGB,np.ones((5,5),np.uint8),iterations = 1)
+    TargetMask = cv2.dilate(TargetMaskRGB,np.ones((3,3),np.uint8),iterations = 1)
+    #SrcMask = cv2.erode(SrcMask,np.ones((5,5),np.uint8),iterations = 2)
+    #SrcMask = cv2.dilate(SrcMask,np.ones((5,5),np.uint8),iterations = 2)
+    return CommonMask, SrcMask, TargetMask
+
+def ArrangeRGB(mat, TargetMask):
+    mat[TargetMask==0] = [0,0,0]
+    gray = cv2.cvtColor(mat,cv2.COLOR_RGB2GRAY)
+    mat[(TargetMask != 0) * (gray == 0)] = 1
+    return mat
+
+def ArrangeHSV(mat, TargetMask, SrcMask):
+    hsv = cv2.cvtColor(mat,cv2.COLOR_RGB2HSV)
+    cv2.imshow('hsv',hsv)
+    h = hsv[:,:,0]
+    s = hsv[:,:,1]
+    v = hsv[:,:,2]
+    #hsv[:,:,1] = 70
+    #hsv[:,:,1] = 255
+    print('---------------')
+    print(s)
+    print(v)
+    mat = cv2.cvtColor(hsv,cv2.COLOR_HSV2BGR)
+    return mat
+
+def GetCenter(mask):
+    min_x = 10000
+    max_x = -1
+    min_y = 10000
+    max_y = -1
+    for y in range(mask.shape[0]):
+        for x in range(mask.shape[1]):
+            if(mask[y][x]):
+                if(x<min_x):
+                    min_x = x
+                if(y<min_y):
+                    min_y = y
+                if(x>max_x):
+                    max_x = x
+                if(y>max_y):
+                    max_y = y
+    return (max_y+min_y)/2, (max_x+min_x)/2 
 
 def make_panorama(original1,original2):
     matcher = cv2.BFMatcher(cv2.NORM_L2,False)
@@ -160,21 +202,25 @@ def make_panorama(original1,original2):
                 querykeys.append((original1.kp[i[0].queryIdx].pt[0],original1.kp[i[0].queryIdx].pt[1]))
                 trainkeys.append((original2.kp[i[0].trainIdx].pt[0],original2.kp[i[0].trainIdx].pt[1]))
 
-    print("-----Calculating Homography-----")
+    print("\n-----Calculating Homography-----")
     H, status = cv2.findHomography(np.array(trainkeys),np.array(querykeys),cv2.RANSAC, 5.0)
     print('-----finished to calculate-----')
     div = calcDst4(H, original2.image.shape)
     d = original1.resizeMat2(div)
-    print(original1.image.shape)
-    T_xy = [[1,0,-d[0]],[0,1,-d[1]],[0,0,1]]
+    T_xy = [[1.0, 0.0, -d[0]],[0.0, 1.0, -d[1]],[0.0, 0.0, 1.0]]
     panorama = cv2.warpPerspective(original2.image,np.dot(T_xy,H),(original1.image.shape[1],original1.image.shape[0]))
-    #panorama, mask = Write(panorama,original1)
-    CommonMask, SrcMask= MakeMask(panorama, original1.image)
+    CommonMask, SrcMask, TargetMask = MakeMask(panorama, original1.image)
     label = cv2.connectedComponentsWithStats(CommonMask)
     center = np.delete(label[3], 0, 0)
+    test = GetCenter(CommonMask)
     print(center[0])
-    blending = cv2.seamlessClone(original1.image, panorama, CommonMask, (int(center[0][0]),int(center[0][1])), cv2.NORMAL_CLONE)
+    print(test)
+    #MakeCheckMat(panorama)
+    blending = cv2.seamlessClone(original1.image, panorama, cv2.cvtColor(CommonMask,cv2.COLOR_GRAY2BGR), (int(test[1]),int(test[0])), cv2.NORMAL_CLONE)
+    blending = ArrangeRGB(blending, TargetMask)
     blending = Write2(blending, original1.image, SrcMask)
-    cv2.imshow('blend',blending)
+    #blending = ArrangeHSV(blending, TargetMask, SrcMask)
+    cv2.imshow('blend', blending)
+    cv2.waitKey(0)
     print("--next--")
     return blending
