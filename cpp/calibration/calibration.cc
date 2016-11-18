@@ -5,7 +5,7 @@
 using namespace std;
 using namespace cv;
 
-Size boardSize = Size(5, 5);
+Size boardSize = Size(7, 10);
 
 class Calibration{
   public:
@@ -107,7 +107,8 @@ int main(int argc, char* argv[]){
 
     if(C.getCalNum() > 0) inputFrame = C.calibrate2(inputFrame);
 
-    bool found = findCirclesGrid(inputFrame, boardSize, oneFramePoints);
+    //bool found = findCirclesGrid(inputFrame, boardSize, oneFramePoints);
+    bool found = findChessboardCorners(inputFrame, boardSize, oneFramePoints);
     if (found) drawChessboardCorners(inputFrame, boardSize, Mat(oneFramePoints), found);
     resize(inputFrame, imageForView, Size(frameWidth/2, frameHeight/2), 0, 0, 0);
     namedWindow("captured-image", CV_WINDOW_NORMAL);
