@@ -126,7 +126,7 @@ int main(int argc, char* argv[]){
       objectPoints.push_back(obj);
       cout << frameNum << " frames saved!" << endl;
     }
-    else if(key == 99){ //c
+    else if(key == 99 && frameNum > 4){ //c
       C.calculate(objectPoints, imagePoints); 
       deleteCache(&frameNum, &objectPoints, &imagePoints);
     }
