@@ -1,5 +1,6 @@
 *.png
 *.jpg
+*.jpeg
 *.out
 *.JPG
 *.PNG
@@ -8,6 +9,7 @@
 *.mov
 *.MOV
 *.swp
+build/
 memo
 *~
 .DS_Store

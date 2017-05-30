@@ -1,7 +1,7 @@
 CFLAGS = -O2 `pkg-config --cflags opencv` 
 LIBS = `pkg-config --libs opencv` -lceres -lglog -lstdc++ -lm -std=c++11
 
-optical: optical.cpp sub.hpp
+optical: optical.cpp sub2.hpp
 	gcc $(CFLAGS) optical.cpp -o optical.out $(LIBS)
 
 version: version.cpp

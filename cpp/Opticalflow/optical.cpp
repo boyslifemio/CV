@@ -11,7 +11,7 @@
 
 using namespace std;
 using namespace cv;
-using namespace cv::cuda;
+// using namespace cv::cuda;
 
 int main(int argc, char* argv[])
 {

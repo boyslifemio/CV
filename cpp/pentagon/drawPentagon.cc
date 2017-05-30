@@ -6,7 +6,7 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-  cv::namedWindow("paper", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
+  cv::namedWindow("pentagon", CV_WINDOW_AUTOSIZE|CV_WINDOW_FREERATIO);
  
   cv::Mat paper = cv::Mat::zeros(cv::Size(500,500), CV_8U);
   cv::Point pt[5]; 
