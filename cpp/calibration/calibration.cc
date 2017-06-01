@@ -114,10 +114,10 @@ int main(int argc, char* argv[]){
     namedWindow("captured-image", CV_WINDOW_NORMAL);
     imshow("captured-image", imageForView);
 
-    if(key == 113){ //q
+    if(key == 113){ //Press q
       break;
     }
-    else if(key == 115 && found){ //s
+    else if(key == 115 && found){ //Press s
       frameNum++;
       Mat gray;
       cvtColor(inputFrame, gray, CV_BGR2GRAY);
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]){
       objectPoints.push_back(obj);
       cout << frameNum << " frames saved!" << endl;
     }
-    else if(key == 99 && frameNum > 4){ //c
+    else if(key == 99 && frameNum > 4){ //Press c
       C.calculate(objectPoints, imagePoints); 
       deleteCache(&frameNum, &objectPoints, &imagePoints);
     }

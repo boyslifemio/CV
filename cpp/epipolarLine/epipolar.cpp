@@ -43,9 +43,9 @@ int main()
 	vector<DMatch> matches;
 	matcher.match(descriptors[0],descriptors[1],matches);
 
-//良いmatchだけを残す
-vector<DMatch> good_matches;
-vector<vector<KeyPoint>> good_keys(2);
+  //良いmatchだけを残す
+  vector<DMatch> good_matches;
+  vector<vector<KeyPoint>> good_keys(2);
 
 
 	for(i = 0; i < matches.size(); i++)
