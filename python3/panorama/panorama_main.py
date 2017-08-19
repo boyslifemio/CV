@@ -7,7 +7,7 @@ from sub import *
 if __name__=="__main__":
     image_names = sys.argv
     if len(image_names) == 1:
-        print("usage: python3 panorama_main.py image1 image2 image3 ..")
+        print("usage: python3 panorama_main.py image1 image2 image3 ")
         exit()
 
     if len(image_names) == 2:
